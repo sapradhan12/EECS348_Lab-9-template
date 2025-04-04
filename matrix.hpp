@@ -1,50 +1,147 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
+#include <iostream>
 #include <vector>
 #include <stdexcept>
-using namespace std;
+#include <iomanip>
+#include <algorithm>
 
-// The header declares a templated Matrix class interface.
-// (No definitions or inline implementations appear here.)
+using std::vector;
+using std::cout;
+using std::endl;
+using std::out_of_range;
+using std::setw;
+
+// Abstract base class to allow polymorphism.
 template<typename T>
-class Matrix {
+class MatrixBase {
 public:
-    // Constructor from a 2D vector.
-    Matrix(const vector<vector<T>> &data);
-    
-    // Returns the matrix dimension (assumed square).
-    int get_size() const;
-    
-    // Returns the element at the given row and column (with bounds checking).
-    T get_value(int row, int col) const;
-    
-    // Sets the element at (row, col) to value (with bounds checking).
-    void set_value(int row, int col, T value);
-    
-    // Operator overloading for matrix addition.
-    Matrix<T> operator+(const Matrix<T>& other) const;
-    
-    // Operator overloading for matrix multiplication.
-    Matrix<T> operator*(const Matrix<T>& other) const;
-    
-    // Returns the sum of the major (main) diagonal.
-    int sum_diagonal_major() const;
-    
-    // Returns the sum of the minor (secondary) diagonal.
-    int sum_diagonal_minor() const;
-    
-    // Swaps two rows. (This member function is virtual to demonstrate polymorphism.)
-    virtual void swap_rows(int row1, int row2);
-    
-    // Swaps two columns.
-    void swap_cols(int col1, int col2);
-    
-    // A simple print function to display the matrix.
-    void print() const;
-    
+    virtual void swap_rows(int row1, int row2) = 0;
+    virtual void swap_cols(int col1, int col2) = 0;
+    virtual void print() const = 0;
+    virtual ~MatrixBase() {}
+};
+
+// Templated Matrix class.
+template<typename T>
+class Matrix : public MatrixBase<T> {
 private:
     vector<vector<T>> data;
+public:
+    // Default constructor.
+    Matrix() {}
+
+    // Construct from a 2D vector.
+    Matrix(const vector<vector<T>> &d) : data(d) {
+        // Optionally, check that the matrix is square.
+        if (!data.empty()) {
+            size_t n = data.size();
+            for (const auto &row : data) {
+                if (row.size() != n)
+                    throw std::invalid_argument("Matrix must be square.");
+            }
+        }
+    }
+
+    // Get the size (n x n) of the matrix.
+    int get_size() const {
+        return data.size();
+    }
+
+    // Get a value with bounds checking.
+    T get_value(int i, int j) const {
+        if (i < 0 || i >= get_size() || j < 0 || j >= get_size())
+            throw out_of_range("Index out of bounds");
+        return data[i][j];
+    }
+
+    // Set a value with bounds checking.
+    void set_value(int i, int j, T value) {
+        if (i < 0 || i >= get_size() || j < 0 || j >= get_size())
+            throw out_of_range("Index out of bounds");
+        data[i][j] = value;
+    }
+
+    // Overload the addition operator.
+    Matrix<T> operator+(const Matrix<T>& other) const {
+        int n = get_size();
+        if (n != other.get_size())
+            throw std::invalid_argument("Matrix sizes do not match for addition");
+        vector<vector<T>> result(n, vector<T>(n, 0));
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                result[i][j] = data[i][j] + other.data[i][j];
+            }
+        }
+        return Matrix<T>(result);
+    }
+
+    // Overload the multiplication operator.
+    Matrix<T> operator*(const Matrix<T>& other) const {
+        int n = get_size();
+        if (n != other.get_size())
+            throw std::invalid_argument("Matrix sizes do not match for multiplication");
+        vector<vector<T>> result(n, vector<T>(n, 0));
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                for (int k = 0; k < n; k++){
+                    result[i][j] += data[i][k] * other.data[k][j];
+                }
+            }
+        }
+        return Matrix<T>(result);
+    }
+
+    // Swap two rows (polymorphic implementation).
+    void swap_rows(int row1, int row2) override {
+        int n = get_size();
+        if (row1 < 0 || row1 >= n || row2 < 0 || row2 >= n)
+            throw out_of_range("Row index out of bounds");
+        std::swap(data[row1], data[row2]);
+    }
+
+    // Swap two columns.
+    void swap_cols(int col1, int col2) override {
+        int n = get_size();
+        if (col1 < 0 || col1 >= n || col2 < 0 || col2 >= n)
+            throw out_of_range("Column index out of bounds");
+        for (int i = 0; i < n; i++) {
+            std::swap(data[i][col1], data[i][col2]);
+        }
+    }
+
+    // Sum of the main diagonal elements.
+    T sum_diagonal_major() const {
+        int n = get_size();
+        T sum = 0;
+        for (int i = 0; i < n; i++){
+            sum += data[i][i];
+        }
+        return sum;
+    }
+
+    // Sum of the secondary diagonal elements.
+    T sum_diagonal_minor() const {
+        int n = get_size();
+        T sum = 0;
+        for (int i = 0; i < n; i++){
+            sum += data[i][n - i - 1];
+        }
+        return sum;
+    }
+
+    // Print the matrix with aligned columns.
+    void print() const override {
+        int n = get_size();
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                cout << setw(4) << data[i][j];
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
 };
 
 #endif // MATRIX_HPP
