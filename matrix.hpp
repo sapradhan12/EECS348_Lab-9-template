@@ -13,7 +13,7 @@ using std::endl;
 using std::out_of_range;
 using std::setw;
 
-// Abstract base class to allow polymorphism.
+//abstract base class
 template<typename T>
 class MatrixBase {
 public:
@@ -23,18 +23,14 @@ public:
     virtual ~MatrixBase() {}
 };
 
-// Templated Matrix class.
+//templated Matrix class
 template<typename T>
 class Matrix : public MatrixBase<T> {
 private:
     vector<vector<T>> data;
 public:
-    // Default constructor.
     Matrix() {}
-
-    // Construct from a 2D vector.
     Matrix(const vector<vector<T>> &d) : data(d) {
-        // Optionally, check that the matrix is square.
         if (!data.empty()) {
             size_t n = data.size();
             for (const auto &row : data) {
@@ -44,26 +40,26 @@ public:
         }
     }
 
-    // Get the size (n x n) of the matrix.
+    //get the size of the matrix
     int get_size() const {
         return data.size();
     }
 
-    // Get a value with bounds checking.
+    //get a value with bounds checking
     T get_value(int i, int j) const {
         if (i < 0 || i >= get_size() || j < 0 || j >= get_size())
             throw out_of_range("Index out of bounds");
         return data[i][j];
     }
 
-    // Set a value with bounds checking.
+    //set a value with bounds checking
     void set_value(int i, int j, T value) {
         if (i < 0 || i >= get_size() || j < 0 || j >= get_size())
             throw out_of_range("Index out of bounds");
         data[i][j] = value;
     }
 
-    // Overload the addition operator.
+    //overload the addition operator
     Matrix<T> operator+(const Matrix<T>& other) const {
         int n = get_size();
         if (n != other.get_size())
@@ -77,7 +73,7 @@ public:
         return Matrix<T>(result);
     }
 
-    // Overload the multiplication operator.
+    //overload the multiplication operator
     Matrix<T> operator*(const Matrix<T>& other) const {
         int n = get_size();
         if (n != other.get_size())
@@ -93,7 +89,7 @@ public:
         return Matrix<T>(result);
     }
 
-    // Swap two rows (polymorphic implementation).
+    //swap two rows
     void swap_rows(int row1, int row2) override {
         int n = get_size();
         if (row1 < 0 || row1 >= n || row2 < 0 || row2 >= n)
@@ -101,7 +97,7 @@ public:
         std::swap(data[row1], data[row2]);
     }
 
-    // Swap two columns.
+    //swap two columns
     void swap_cols(int col1, int col2) override {
         int n = get_size();
         if (col1 < 0 || col1 >= n || col2 < 0 || col2 >= n)
@@ -111,7 +107,7 @@ public:
         }
     }
 
-    // Sum of the main diagonal elements.
+    //sum of the main diagonal
     T sum_diagonal_major() const {
         int n = get_size();
         T sum = 0;
@@ -121,7 +117,7 @@ public:
         return sum;
     }
 
-    // Sum of the secondary diagonal elements.
+    //sum of the secondary diagonal
     T sum_diagonal_minor() const {
         int n = get_size();
         T sum = 0;
@@ -131,7 +127,7 @@ public:
         return sum;
     }
 
-    // Print the matrix with aligned columns.
+    //print the matrix
     void print() const override {
         int n = get_size();
         for (int i = 0; i < n; i++){
@@ -144,4 +140,4 @@ public:
     }
 };
 
-#endif // MATRIX_HPP
+#endif
