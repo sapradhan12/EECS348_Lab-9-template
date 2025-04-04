@@ -20,7 +20,6 @@ public:
     virtual void swap_rows(int row1, int row2) = 0;
     virtual void swap_cols(int col1, int col2) = 0;
     virtual void print() const = 0;
-    virtual ~MatrixBase() {}
 };
 
 //templated Matrix class
